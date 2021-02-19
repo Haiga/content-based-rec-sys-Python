@@ -92,8 +92,8 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
     else:
         raise Exception("Invalid type of file")
 
-    all_users = set()
-    all_items = set()
+    all_users = {}
+    all_items = {}
 
     users_items_map = {}
 
@@ -104,7 +104,8 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
     add_by_users = not users_to_add is None and items_to_add is None
 
     array_user_item_pairs = []
-
+    global_sum = 0
+    global_num = 0
     for line in lines:
         m = p.match(line)
 
@@ -116,8 +117,23 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
         else:
             r = int(m.groups()[2])
 
-        all_users.add(u)
-        all_items.add(i)
+        global_sum += r
+        global_num += 1
+
+        if u not in all_users:
+            all_users.setdefault(u, {})
+            all_users[u].setdefault('sum', r)
+            all_users[u].setdefault('cont', 1)
+        else:
+            all_users[u]['sum'] += r
+            all_users[u]['cont'] += 1
+        if i not in all_items:
+            all_items.setdefault(i, {})
+            all_items[i].setdefault('sum', r)
+            all_items[i].setdefault('cont', 1)
+        else:
+            all_items[i]['sum'] += r
+            all_items[i]['cont'] += 1
 
         should_be_added = False
         if add_all:
@@ -149,11 +165,12 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
 
     # print(f"{cont_removed_ratings} removed ratings")
     if type_return == 'array':
-        return all_users, all_items, array_user_item_pairs
-    return all_users, all_items, users_items_map
+        return all_users, all_items, array_user_item_pairs, global_sum/global_num
+    return all_users, all_items, users_items_map, global_sum/global_num
 
 
-def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,Prediction", verbose=False, max_punctuation=10, min_punctuation=0):
+def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,Prediction", verbose=False,
+                 max_punctuation=10, min_punctuation=0):
     """
     Parameters
     ----------

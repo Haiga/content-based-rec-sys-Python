@@ -9,12 +9,14 @@ with open("content.csv", "r", encoding="utf8") as content_file:
 first = True
 items_infos = {}
 genres = {}
-years = {}
-releases = {}
-runtimes = {}
+titles = {}
+# years = {}
+# releases = {}
+# runtimes = {}
 languages = {}
 countries = {}
-imdb_ratings = {}
+# imdb_ratings = {}
+
 for line in content:
     pattern = re.compile('i([0-9]*),(.*)')
     groups = pattern.match(line).groups()
@@ -44,6 +46,8 @@ for line in content:
                 new_key = s.strip()
                 if new_key == "N/A":
                     continue
+                if len(new_key) <= 3 and split == " ":
+                    continue
                 if new_key not in any_dict:
                     any_dict.setdefault(new_key, [value])
                 else:
@@ -53,12 +57,13 @@ for line in content:
     item_id = int(item_id)
     items_infos[item_id] = dict_content
     add_to(genres, dict_content, 'Genre', item_id, split=",")
-    add_to(years, dict_content, 'Year', item_id)
-    add_to(releases, dict_content, 'Released', item_id)
-    add_to(runtimes, dict_content, 'Runtime', item_id)
+    add_to(titles, dict_content, 'Title', item_id, split=" ")
+    # add_to(years, dict_content, 'Year', item_id)
+    # add_to(releases, dict_content, 'Released', item_id)
+    # add_to(runtimes, dict_content, 'Runtime', item_id)
     add_to(languages, dict_content, 'Language', item_id, split=",")
     add_to(countries, dict_content, 'Country', item_id, split=",")
-    add_to(imdb_ratings, dict_content, 'imdbRating', item_id)
+    # add_to(imdb_ratings, dict_content, 'imdbRating', item_id)
 
 # print(genres)
 # print(years)
@@ -69,21 +74,23 @@ for line in content:
 # print(imdb_ratings)
 
 keys_genres = genres.keys()
-keys_years = years.keys()
-keys_releases = releases.keys()
-keys_runtimes = runtimes.keys()
+keys_titles = titles.keys()
+# keys_years = years.keys()
+# keys_releases = releases.keys()
+# keys_runtimes = runtimes.keys()
 keys_languages = languages.keys()
 keys_countries = countries.keys()
-keys_imdb_ratings = imdb_ratings.keys()
+# keys_imdb_ratings = imdb_ratings.keys()
 
 num_factors = 0
-for keys_conj in [keys_genres, keys_years, keys_releases, keys_runtimes, keys_languages, keys_countries,
-                  keys_imdb_ratings]:
+# for keys_conj in [keys_genres, keys_years, keys_releases, keys_runtimes, keys_languages, keys_countries,
+#                   keys_imdb_ratings]:
+for keys_conj in [keys_genres, keys_titles, keys_languages, keys_countries]:
     num_factors += len(keys_conj)
 
 items_ids, _ = indexTwoSets(items_infos, items_infos)
 # print(len(items_ids))
-print(num_factors)
+# print(num_factors)
 
 users_dict, items_dict, u_i = readFile("ratings.csv")
 # print(len(users_dict))
@@ -93,8 +100,7 @@ items_vectors = np.zeros((len(items_ids), num_factors))
 users_vectors = np.zeros((len(users_ids), num_factors))
 
 cont = 0
-for conj in [genres, years, releases, runtimes, languages, countries,
-             imdb_ratings]:
+for conj in [genres, titles, languages, countries]:
     keys_conj = conj.keys()
     for key in keys_conj:
         for i in conj[key]:
@@ -148,4 +154,4 @@ for u_i in u_i_test:
 
 
 writePredict("results.csv", u_i_test, preds)
-#2.53 de RMSE
+#2.77 de RMSE
