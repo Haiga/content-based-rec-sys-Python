@@ -34,6 +34,7 @@ def intervalRuntime(my_str):
     else:
         return "larger"
 
+
 def rmse(y, yhat):
     y = np.array(y)
     yhat = np.array(yhat)
@@ -58,7 +59,7 @@ best = 10000
 conj_best = []
 
 # for type in [1, 2, 3]:
-for type in [2]:
+for type in [1]:
     # for opt in options:
     for opt in ['Runtime']:
         # try:
@@ -95,6 +96,7 @@ for type in [2]:
                 json_content = groups[1]
                 dict_content = json.loads(json_content)
 
+
                 def add_to(any_dict, origin_dict, key, value, split=None):
                     if key not in origin_dict:
                         return
@@ -129,15 +131,18 @@ for type in [2]:
                             else:
                                 any_dict[new_key].append(value)
 
+
                 item_id = int(item_id)
                 items_infos[item_id] = dict_content
 
                 for used_info in used_infos:
                     if used_info in keys_infos_itens:
-                        add_to(keys_infos_itens[used_info], dict_content, used_info, item_id, split=used_infos[used_info])
+                        add_to(keys_infos_itens[used_info], dict_content, used_info, item_id,
+                               split=used_infos[used_info])
                     else:
                         keys_infos_itens[used_info] = {}
-                        add_to(keys_infos_itens[used_info], dict_content, used_info, item_id, split=used_infos[used_info])
+                        add_to(keys_infos_itens[used_info], dict_content, used_info, item_id,
+                               split=used_infos[used_info])
 
             num_factors = 0
             for keys_conj in keys_infos_itens:
@@ -166,15 +171,20 @@ for type in [2]:
             for u in u_i:
                 for i in u_i[u]:
                     if i in items_ids:
-                        users_vectors[users_ids[u]] = users_vectors[users_ids[u]] + items_vectors[items_ids[i]] * u_i[u][i]
+                        users_vectors[users_ids[u]] = users_vectors[users_ids[u]] + items_vectors[items_ids[i]] * \
+                                                      u_i[u][i]
 
             preds = []
             users_test, items_test, u_i_test, _ = readFile("targets.csv", type_return="array", type="test")
             preds_mask = []
 
+            num_ratings_without = 0
+            all_num_ratings = 0
+            all_num_items_without = 0
+            all_without_nothing = 0
             for u_i in u_i_test:
                 u, i = u_i
-
+                all_num_ratings += 1
                 if u in users_ids and i in items_ids:
                     a = users_vectors[users_ids[u]]
                     b = items_vectors[items_ids[i]]
@@ -186,28 +196,41 @@ for type in [2]:
                             preds.append(0)
 
                         preds_mask.append(1)
+                        num_ratings_without += 1
                     else:
                         cos_sim = dot(a, b) / (norma_den)
                         if type == 1:
-                            preds.append(cos_sim * (users_dict[u]['sum'] / users_dict[u]['cont']))
+                            preds.append(cos_sim)
                         elif type == 2 or type == 3:
                             preds.append(cos_sim)
                         preds_mask.append(0)
+
                 else:
                     if type == 1:
                         if u in users_dict:
                             preds.append(users_dict[u]['sum'] / users_dict[u]['cont'])
                         elif i in items_dict:
                             preds.append(items_dict[i]['sum'] / items_dict[i]['cont'])
+                            all_num_items_without += 1
                         else:
                             preds.append(mean_ratings)
+                            all_without_nothing += 1
                     elif type == 2 or type == 3:
                         preds.append(0)
 
                     preds_mask.append(1)
-
+                    num_ratings_without += 1
+            print(num_ratings_without / all_num_ratings) #approx 19%
+            print(num_ratings_without) ###sem informação do usuário ou sem informação do item, ou ambos
+            print(all_num_ratings)
+            print(all_num_items_without)  ###sem informação do usuário, com informação do item
+            print(all_without_nothing)  ###sem informação do usuário, sem informação do item
             preds = np.array(preds)
-            if type == 2:
+            if type == 1:
+                predsT = np.multiply(preds, np.array(preds_mask) == 0)
+                preds = preds + 10 * (predsT / np.max(predsT))
+
+            if type == 8:
                 predsT = np.array(preds)[np.array(preds_mask) == 0]
                 preds = preds + np.mean(predsT) * np.array(preds_mask)
                 min_preds = np.min(preds)
@@ -241,4 +264,4 @@ print("---------------\n\n")
 print(f"Best RMSE: {best}")
 print(conj_best)
 
-#2.54
+# 2.30
