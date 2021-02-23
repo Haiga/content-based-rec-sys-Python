@@ -1,6 +1,24 @@
 import re
 
 
+def readContent(content_file_name, ignore_header=True):
+    """
+        Parameters
+        ----------
+        content_file_name: str Nome do arquivo que será lido em utf-8
+        ignore_header: boolean se True Ignora no retorno a primeira linha do arquivo content_file_name
+        Returns
+        -------
+        content_file : array
+            Retorna um array contendo as linhas do documento.
+    """
+    with open(content_file_name, "r", encoding="utf8") as content_file:
+        if ignore_header:
+            return content_file.readlines()[1:]
+        else:
+            return content_file.readlines()
+
+
 def indexTwoSets(first_set, second_set):
     """
     Retorna a indexação dos dados nos conjuntos first_set e second_set (essa indexação pode ser utilizada para acessar a
@@ -166,8 +184,8 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
 
     # print(f"{cont_removed_ratings} removed ratings")
     if type_return == 'array':
-        return all_users, all_items, array_user_item_pairs, global_sum/global_num
-    return all_users, all_items, users_items_map, global_sum/global_num
+        return all_users, all_items, array_user_item_pairs, global_sum / global_num
+    return all_users, all_items, users_items_map, global_sum / global_num
 
 
 def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,Prediction", verbose=False,
