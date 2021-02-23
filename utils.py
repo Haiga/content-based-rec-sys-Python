@@ -204,6 +204,7 @@ def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,
     -------
     """
     if verbose:
+        print(header)
         for u_i, p in zip(users_itens, predicts):
             u = u_i[0]
             i = u_i[1]
