@@ -188,9 +188,9 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
     return all_users, all_items, users_items_map, global_sum / global_num
 
 
-def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,Prediction", verbose=False,
-                 max_punctuation=10, min_punctuation=0):
+def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,Prediction", verbose=False, max_punctuation=10, min_punctuation=0):
     """
+
     Parameters
     ----------
     name_file_output: str Nome do arquivo de saída
@@ -200,20 +200,29 @@ def writePredict(name_file_output, users_itens, predicts, header="UserId:ItemId,
     verbose: bool Escreve as predições na saída padrão
     max_punctuation: int, optional Se alguma predição fica acima de max_punctuation, a predição é convertida para esse máximo
     min_punctuation: int, optional Se alguma predição fica abaixo de min_punctuation, a predição é convertida para esse mínimo
+
     Returns
     -------
+
     """
     if verbose:
         print(header)
+        size_p = len(predicts)
+        cont_lines = 0
         for u_i, p in zip(users_itens, predicts):
+            cont_lines += 1
+            if cont_lines == size_p:
+                end_line = ""
+            else:
+                end_line = "\n"
             u = u_i[0]
             i = u_i[1]
             if p > max_punctuation:
-                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(10))
+                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(10), end=end_line)
             elif p < min_punctuation:
-                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(0))
+                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(0), end=end_line)
             else:
-                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(p))
+                print("u" + str(u).zfill(7) + ":" + "i" + str(i).zfill(7) + "," + str(p), end=end_line)
     else:
         with open(name_file_output, 'w') as file:
             file.write(header + "\n")
