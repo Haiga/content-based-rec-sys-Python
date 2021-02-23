@@ -46,6 +46,7 @@ def readFile(name_file, type="train", ignore_first_line=True, users_to_add=None,
     um dicionário para seus itens e cada item indexa o rating do usuário chave para tal item
     Se type_return for 'array' o terceiro retorno é um array com pares de user,item (type == test) ou trios de
     user,item,rating (type == train)
+    O quarto retorno desse método é a média global dos ratings
     Parameters
     ----------
     name_file : str
